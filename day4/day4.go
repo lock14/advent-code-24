@@ -36,6 +36,27 @@ func Part1(filename string) int64 {
 	return result
 }
 
+func Part2(filename string) int64 {
+	f, err := os.Open(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	scanner := bufio.NewScanner(f)
+	var table []string
+	for scanner.Scan() {
+		table = append(table, scanner.Text())
+	}
+	result := int64(0)
+	for i := 0; i < len(table); i++ {
+		for j := 0; j < len(table[i]); j++ {
+			if isXMAS(table, i, j) {
+				result++
+			}
+		}
+	}
+	return result
+}
+
 func search(table []string, row, col, idx int, advance func(int, int) (int, int)) int64 {
 	if idx == len(XMas) {
 		return 1
@@ -47,6 +68,24 @@ func search(table []string, row, col, idx int, advance func(int, int) (int, int)
 		}
 	}
 	return 0
+}
+
+func isXMAS(table []string, i int, j int) bool {
+	if i == 0 || j == 0 || i == len(table)-1 || j == len(table[i])-1 {
+		// we are at an edge
+		return false
+	}
+	firstDiagonal := false
+	secondDiagonal := false
+	if (table[i-1][j-1] == 'M' && table[i][j] == 'A' && table[i+1][j+1] == 'S') ||
+		(table[i-1][j-1] == 'S' && table[i][j] == 'A' && table[i+1][j+1] == 'M') {
+		firstDiagonal = true
+	}
+	if (table[i+1][j-1] == 'M' && table[i][j] == 'A' && table[i-1][j+1] == 'S') ||
+		(table[i+1][j-1] == 'S' && table[i][j] == 'A' && table[i-1][j+1] == 'M') {
+		secondDiagonal = true
+	}
+	return firstDiagonal && secondDiagonal
 }
 
 func up(r, c int) (int, int) {
@@ -79,17 +118,4 @@ func lowerLeft(r, c int) (int, int) {
 
 func lowerRight(r, c int) (int, int) {
 	return r + 1, c + 1
-}
-
-func Part2(filename string) int64 {
-	f, err := os.Open(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-	scanner := bufio.NewScanner(f)
-	result := int64(0)
-	for scanner.Scan() {
-
-	}
-	return result
 }
