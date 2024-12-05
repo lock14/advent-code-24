@@ -16,7 +16,6 @@ func (s *Set[T]) Add(es ...T) {
 	for _, e := range es {
 		s.m[e] = struct{}{}
 	}
-
 }
 
 func (s *Set[T]) Remove(e T) {

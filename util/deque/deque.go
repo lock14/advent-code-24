@@ -9,12 +9,6 @@ import (
 const (
 	// DefaultCapacity is the capacity assigned if no other is provided.
 	DefaultCapacity = 1
-	// if an arraydeque's capacity is under this amount its capacity
-	// will double when it needs to be resized.
-	doublingThreshold = 512
-	// if an arraydeque's capacity is under this amount its capacity
-	// will increase by 50% when it needs to be resized.
-	fiftyPercentThreshold = 2048
 )
 
 // Deque represents a deque of elements of type T backed by an array.

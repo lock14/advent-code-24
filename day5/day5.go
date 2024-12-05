@@ -3,43 +3,29 @@ package day5
 import (
 	. "advent/util"
 	"advent/util/deque"
+	"advent/util/graph"
 	"advent/util/set"
 	"strings"
 )
 
 func Part1(filename string) int64 {
-	numbers := make(map[int64]*set.Set[int64])
-	scanner, closeFunc := NewScanner(filename)
-	defer closeFunc()
-	for scanner.Scan() {
-		if scanner.Text() == "" {
-			break
-		}
-		parts := strings.Split(scanner.Text(), "|")
-		a := Must(ParseInt64(parts[0]))
-		b := Must(ParseInt64(parts[1]))
-		if numbers[a] == nil {
-			numbers[a] = set.New[int64]()
-		}
-		numbers[a].Add(b)
-	}
 	result := int64(0)
-	for scanner.Scan() {
-		list := Must(MapSliceErr(strings.Split(scanner.Text(), ","), ParseInt64))
-		for _, n := range list {
-			if numbers[n] == nil {
-				numbers[n] = set.New[int64]()
-			}
-		}
-		if topSort(numbers, list) {
-			result += list[len(list)/2]
-		}
-	}
+	ScanAndProcess(filename, func(n int64) {
+		result += n
+	}, func(int64) {})
 	return result
 }
 
 func Part2(filename string) int64 {
-	numbers := make(map[int64]*set.Set[int64])
+	result := int64(0)
+	ScanAndProcess(filename, func(int64) {}, func(n int64) {
+		result += n
+	})
+	return result
+}
+
+func ScanAndProcess(filename string, correctOrder func(int64), incorrectOrder func(int64)) {
+	numbers := graph.New(graph.Directed[int64]())
 	scanner, closeFunc := NewScanner(filename)
 	defer closeFunc()
 	for scanner.Scan() {
@@ -49,35 +35,27 @@ func Part2(filename string) int64 {
 		parts := strings.Split(scanner.Text(), "|")
 		a := Must(ParseInt64(parts[0]))
 		b := Must(ParseInt64(parts[1]))
-		if numbers[a] == nil {
-			numbers[a] = set.New[int64]()
-		}
-		numbers[a].Add(b)
+		numbers.AddEdge(a, b)
 	}
-	result := int64(0)
 	for scanner.Scan() {
 		list := Must(MapSliceErr(strings.Split(scanner.Text(), ","), ParseInt64))
-		for _, n := range list {
-			if numbers[n] == nil {
-				numbers[n] = set.New[int64]()
-			}
-		}
-		if !topSort(numbers, list) {
-			result += list[len(list)/2]
+		if topSort(numbers, list) {
+			correctOrder(list[len(list)/2])
+		} else {
+			incorrectOrder(list[len(list)/2])
 		}
 	}
-	return result
 }
 
-func topSort(numbers map[int64]*set.Set[int64], list []int64) bool {
+func topSort(graph *graph.Graph[int64], list []int64) bool {
 	visiting := set.New[int64]()
 	visited := set.New[int64]()
 	stack := deque.New[int64]()
-	filteredVertices := set.New[int64]()
-	filteredVertices.Add(list...)
-	filter := func(n int64) bool { return filteredVertices.Contains(n) }
+	listVertices := set.New[int64]()
+	listVertices.Add(list...)
+	shouldRecurse := func(n int64) bool { return listVertices.Contains(n) }
 	for _, n := range list {
-		dfs(n, numbers, filter, visiting, visited, stack)
+		dfs(n, graph, shouldRecurse, visiting, visited, stack)
 	}
 	i := 0
 	correctOrder := true
@@ -91,17 +69,19 @@ func topSort(numbers map[int64]*set.Set[int64], list []int64) bool {
 	return correctOrder
 }
 
-func dfs(v int64, graph map[int64]*set.Set[int64], test func(int64) bool, visiting, visited *set.Set[int64], stack *deque.Deque[int64]) bool {
+func dfs(v int64, graph *graph.Graph[int64], shouldRecurse func(int64) bool, visiting, visited *set.Set[int64], stack *deque.Deque[int64]) bool {
 	if visited.Contains(v) {
+		// already processed v
 		return false
 	}
 	if visiting.Contains(v) {
-		// contains a cycle
+		// graph contains a cycle
 		return true
 	}
 	visiting.Add(v)
-	for n := range graph[v].All() {
-		if test(n) && dfs(n, graph, test, visiting, visited, stack) {
+	for n := range graph.Neighbors(v) {
+		if shouldRecurse(n) && dfs(n, graph, shouldRecurse, visiting, visited, stack) {
+			// pass cycle detection up
 			return true
 		}
 	}
