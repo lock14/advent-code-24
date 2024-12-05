@@ -48,7 +48,7 @@ var days = []struct {
 		part2: day4.Part2,
 	},
 	{
-		input: Day5Input,
+		input: Day5Sample,
 		part1: day5.Part1,
 		part2: day5.Part2,
 	},
