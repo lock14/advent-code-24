@@ -1,6 +1,8 @@
 package util
 
-import "strconv"
+import (
+	"strconv"
+)
 
 func ParseInt64(s string) (int64, error) {
 	return strconv.ParseInt(s, 10, 64)

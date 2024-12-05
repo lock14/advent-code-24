@@ -1,20 +1,15 @@
 package day4
 
 import (
-	"bufio"
-	"log"
-	"os"
+	. "advent/util"
 )
 
 var XMas = []byte{'X', 'M', 'A', 'S'}
 
 func Part1(filename string) int64 {
-	f, err := os.Open(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-	scanner := bufio.NewScanner(f)
 	var table []string
+	scanner, closeFunc := NewScanner(filename)
+	defer closeFunc()
 	for scanner.Scan() {
 		table = append(table, scanner.Text())
 	}
@@ -37,12 +32,9 @@ func Part1(filename string) int64 {
 }
 
 func Part2(filename string) int64 {
-	f, err := os.Open(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-	scanner := bufio.NewScanner(f)
 	var table []string
+	scanner, closeFunc := NewScanner(filename)
+	defer closeFunc()
 	for scanner.Scan() {
 		table = append(table, scanner.Text())
 	}

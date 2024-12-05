@@ -1,32 +1,23 @@
 package day1
 
 import (
+	. "advent/util"
 	"bufio"
 	"container/heap"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 )
 
 func Part1(filename string) int64 {
-	f, err := os.Open(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-	scanner := bufio.NewScanner(f)
 	list1 := &Int64Heap{}
 	list2 := &Int64Heap{}
+	scanner, closeFunc := NewScanner(filename)
+	defer closeFunc()
 	for scanner.Scan() {
 		parts := strings.Fields(scanner.Text())
-		a, err := strconv.ParseInt(parts[0], 10, 64)
-		if err != nil {
-			log.Fatal(err)
-		}
-		b, err := strconv.ParseInt(parts[1], 10, 64)
-		if err != nil {
-			log.Fatal(err)
-		}
+		a := Must(ParseInt64(parts[0]))
+		b := Must(ParseInt64(parts[1]))
 		list1.Push(a)
 		list2.Push(b)
 	}
@@ -51,14 +42,8 @@ func Part2(filename string) int64 {
 	list2Counts := make(map[int64]int64)
 	for scanner.Scan() {
 		parts := strings.Fields(scanner.Text())
-		a, err := strconv.ParseInt(parts[0], 10, 64)
-		if err != nil {
-			log.Fatal(err)
-		}
-		b, err := strconv.ParseInt(parts[1], 10, 64)
-		if err != nil {
-			log.Fatal(err)
-		}
+		a := Must(ParseInt64(parts[0]))
+		b := Must(ParseInt64(parts[1]))
 		list1 = append(list1, a)
 		if _, ok := list2Counts[b]; !ok {
 			list2Counts[b] = 0

@@ -1,27 +1,18 @@
 package day2
 
 import (
-	"advent/util"
-	"bufio"
+	. "advent/util"
 	"iter"
-	"log"
-	"os"
 	"slices"
 	"strings"
 )
 
 func Part1(filename string) int64 {
-	f, err := os.Open(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-	scanner := bufio.NewScanner(f)
 	numSafe := int64(0)
+	scanner, closeFunc := NewScanner(filename)
+	defer closeFunc()
 	for scanner.Scan() {
-		report, err := util.MapSliceErr(strings.Fields(scanner.Text()), util.ParseInt64)
-		if err != nil {
-			log.Fatal(err)
-		}
+		report := Must(MapSliceErr(strings.Fields(scanner.Text()), ParseInt64))
 		safe := safe(slices.All(report), -1) || safe(slices.Backward(report), -1)
 		if safe {
 			numSafe += 1
@@ -31,17 +22,11 @@ func Part1(filename string) int64 {
 }
 
 func Part2(filename string) int64 {
-	f, err := os.Open(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-	scanner := bufio.NewScanner(f)
 	numSafe := int64(0)
+	scanner, closeFunc := NewScanner(filename)
+	defer closeFunc()
 	for scanner.Scan() {
-		report, err := util.MapSliceErr(strings.Fields(scanner.Text()), util.ParseInt64)
-		if err != nil {
-			log.Fatal(err)
-		}
+		report := Must(MapSliceErr(strings.Fields(scanner.Text()), ParseInt64))
 		safe := safeWithRemoval(slices.All(report), len(report)) || safeWithRemoval(slices.Backward(report), len(report))
 		if safe {
 			numSafe += 1
