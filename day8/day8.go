@@ -62,5 +62,69 @@ func Part1(filename string) int64 {
 }
 
 func Part2(filename string) int64 {
-	return 0
+	var table [][]byte
+	locations := make(map[byte][]pos)
+	scanner, closeFunc := NewScanner(filename)
+	defer closeFunc()
+	row := 0
+	for scanner.Scan() {
+		var rowData []byte
+		text := scanner.Text()
+		for col := 0; col < len(text); col++ {
+			rowData = append(rowData, text[col])
+			if text[col] != '.' && text[col] != '#' {
+				locations[text[col]] = append(locations[text[col]], pos{row, col})
+			}
+		}
+		table = append(table, rowData)
+		row++
+	}
+	antinodeLocs := make(map[int]map[int]struct{})
+	for _, coords := range locations {
+		for i := 0; i < len(coords); i++ {
+			pos1 := coords[i]
+			for j := i + 1; j < len(coords); j++ {
+				pos2 := coords[j]
+				deltaX := pos2.x - pos1.x
+				deltaY := pos2.y - pos1.y
+
+				if _, ok := antinodeLocs[pos1.x]; !ok {
+					antinodeLocs[pos1.x] = make(map[int]struct{})
+				}
+				antinodeLocs[pos1.x][pos1.y] = struct{}{}
+				if _, ok := antinodeLocs[pos2.x]; !ok {
+					antinodeLocs[pos2.x] = make(map[int]struct{})
+				}
+				antinodeLocs[pos2.x][pos2.y] = struct{}{}
+
+				// step forward
+				r := pos2.x + deltaX
+				c := pos2.y + deltaY
+				for 0 <= r && r < len(table) && 0 <= c && c < len(table[r]) {
+					if _, ok := antinodeLocs[r]; !ok {
+						antinodeLocs[r] = make(map[int]struct{})
+					}
+					antinodeLocs[r][c] = struct{}{}
+					r += deltaX
+					c += deltaY
+				}
+				// step backward
+				r = pos1.x - deltaX
+				c = pos1.y - deltaY
+				for 0 <= r && r < len(table) && 0 <= c && c < len(table[r]) {
+					if _, ok := antinodeLocs[r]; !ok {
+						antinodeLocs[r] = make(map[int]struct{})
+					}
+					antinodeLocs[r][c] = struct{}{}
+					r -= deltaX
+					c -= deltaY
+				}
+			}
+		}
+	}
+	var count int64
+	for row := range antinodeLocs {
+		count += int64(len(antinodeLocs[row]))
+	}
+	return count
 }
