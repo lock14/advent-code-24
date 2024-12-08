@@ -7,22 +7,18 @@ import (
 	"advent/day4"
 	"advent/day5"
 	"advent/day6"
+	"advent/day7"
 	"fmt"
 )
 
 const (
-	Day1Input  = "day1/input.txt"
 	Day1Sample = "day1/sample.txt"
-	Day2Input  = "day2/input.txt"
 	Day2Sample = "day2/sample.txt"
-	Day3Input  = "day3/input.txt"
 	Day3Sample = "day3/sample.txt"
-	Day4Input  = "day4/input.txt"
 	Day4Sample = "day4/sample.txt"
-	Day5Input  = "day5/input.txt"
 	Day5Sample = "day5/sample.txt"
-	Day6Input  = "day6/input.txt"
 	Day6Sample = "day6/sample.txt"
+	Day7Sample = "day7/sample.txt"
 )
 
 var days = []struct {
@@ -59,6 +55,11 @@ var days = []struct {
 		input: Day6Sample,
 		part1: day6.Part1,
 		part2: day6.Part2,
+	},
+	{
+		input: Day7Sample,
+		part1: day7.Part1,
+		part2: day7.Part2,
 	},
 }
 

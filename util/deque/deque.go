@@ -40,8 +40,8 @@ func New[T any](opts ...Option) *Deque[T] {
 }
 
 // Add is an alias
-func (d *Deque[T]) Add(t T) {
-	d.AddBack(t)
+func (d *Deque[T]) Add(ts ...T) {
+	d.AddBack(ts...)
 }
 
 // Remove is an alias
@@ -50,8 +50,8 @@ func (d *Deque[T]) Remove() T {
 }
 
 // Push is an alias
-func (d *Deque[T]) Push(t T) {
-	d.AddFront(t)
+func (d *Deque[T]) Push(ts ...T) {
+	d.AddFront(ts...)
 }
 
 // Pop is an alias
@@ -59,16 +59,18 @@ func (d *Deque[T]) Pop() T {
 	return d.RemoveFront()
 }
 
-func (d *Deque[T]) AddFront(t T) {
-	if d.size == len(d.slice) {
-		d.resize()
+func (d *Deque[T]) AddFront(ts ...T) {
+	for _, t := range ts {
+		if d.size == len(d.slice) {
+			d.resize()
+		}
+		d.front--
+		if d.front == -1 {
+			d.front = len(d.slice) - 1
+		}
+		d.slice[d.front] = t
+		d.size++
 	}
-	d.front--
-	if d.front == -1 {
-		d.front = len(d.slice) - 1
-	}
-	d.slice[d.front] = t
-	d.size++
 }
 
 func (d *Deque[T]) RemoveFront() T {
@@ -86,16 +88,18 @@ func (d *Deque[T]) RemoveFront() T {
 	return t
 }
 
-func (d *Deque[T]) AddBack(t T) {
-	if d.size == len(d.slice) {
-		d.resize()
+func (d *Deque[T]) AddBack(ts ...T) {
+	for _, t := range ts {
+		if d.size == len(d.slice) {
+			d.resize()
+		}
+		d.slice[d.back] = t
+		d.back++
+		if d.back == len(d.slice) {
+			d.back = 0
+		}
+		d.size++
 	}
-	d.slice[d.back] = t
-	d.back++
-	if d.back == len(d.slice) {
-		d.back = 0
-	}
-	d.size++
 }
 
 func (d *Deque[T]) RemoveBack() T {
@@ -111,6 +115,20 @@ func (d *Deque[T]) RemoveBack() T {
 	d.slice[d.back] = zero
 	d.size--
 	return t
+}
+
+func (d *Deque[T]) PeekFront() T {
+	if d.Empty() {
+		panic("cannot peek from an empty Deque")
+	}
+	return d.slice[d.front]
+}
+
+func (d *Deque[T]) PeekBack() T {
+	if d.Empty() {
+		panic("cannot peek from an empty Deque")
+	}
+	return d.slice[d.back-1]
 }
 
 func (d *Deque[T]) Size() int {
