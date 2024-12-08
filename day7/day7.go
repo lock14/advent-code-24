@@ -57,21 +57,21 @@ func Part2(filename string) int64 {
 	return sum
 }
 
-func equationHolds(deq *deque.Deque[int64], target int64, ops []Op) bool {
-	if deq.Size() == 1 && deq.PeekFront() == target {
+func equationHolds(stack *deque.Deque[int64], target int64, ops []Op) bool {
+	if stack.Size() == 1 && stack.Peek() == target {
 		return true
-	} else if deq.Size() > 1 {
-		a := deq.RemoveFront()
-		b := deq.RemoveFront()
+	} else if stack.Size() > 1 {
+		a := stack.Pop()
+		b := stack.Pop()
 		for _, op := range ops {
-			deq.AddFront(op(a, b))
-			if equationHolds(deq, target, ops) {
+			stack.Push(op(a, b))
+			if equationHolds(stack, target, ops) {
 				return true
 			}
-			deq.RemoveFront()
+			stack.Pop()
 		}
-		deq.AddFront(b)
-		deq.AddFront(a)
+		stack.Push(b)
+		stack.Push(a)
 	}
 	return false
 }

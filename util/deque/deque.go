@@ -39,22 +39,22 @@ func New[T any](opts ...Option) *Deque[T] {
 	}
 }
 
-// Add is an alias
+// Add is an alias for AddBack
 func (d *Deque[T]) Add(ts ...T) {
 	d.AddBack(ts...)
 }
 
-// Remove is an alias
+// Remove is an alias RemoveFront
 func (d *Deque[T]) Remove() T {
 	return d.RemoveFront()
 }
 
-// Push is an alias
+// Push is an alias for AddFront
 func (d *Deque[T]) Push(ts ...T) {
 	d.AddFront(ts...)
 }
 
-// Pop is an alias
+// Pop is an alias for RemoveFront
 func (d *Deque[T]) Pop() T {
 	return d.RemoveFront()
 }
@@ -115,6 +115,11 @@ func (d *Deque[T]) RemoveBack() T {
 	d.slice[d.back] = zero
 	d.size--
 	return t
+}
+
+// Peek is an alias for PeekFront
+func (d *Deque[T]) Peek() T {
+	return d.PeekFront()
 }
 
 func (d *Deque[T]) PeekFront() T {
