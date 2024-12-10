@@ -3,134 +3,121 @@ package day9
 import (
 	. "advent/util"
 	"bufio"
-	"fmt"
-	"strings"
 )
-
-const (
-	FreeID     = -1
-	FreedUpID  = -2
-	SentinalID = -10000
-)
-
-type FileInfo struct {
-	ID     int
-	blocks int
-	next   *FileInfo
-	prev   *FileInfo
-}
 
 func Part1(filename string) int64 {
 	ID := 0
+	freeID := -1
 	file := true
-	fileInfos := sentinel()
-	cur := fileInfos
 	scanner, closeFunc := NewScanner(filename)
 	defer closeFunc()
 	scanner.Split(bufio.ScanBytes)
+	var inflate []int
 	for scanner.Scan() {
 		n := int(Must(ParseInt64(scanner.Text())))
 		if file {
-			insertAfter(cur, &FileInfo{ID: ID, blocks: n})
+			for i := 0; i < n; i++ {
+				inflate = append(inflate, ID)
+			}
 			ID++
 		} else {
-			insertAfter(cur, &FileInfo{ID: FreeID, blocks: n})
+			for i := 0; i < n; i++ {
+				inflate = append(inflate, freeID)
+			}
+			freeID--
 		}
 		file = !file
-		cur = cur.next
 	}
-
-	freeBlock := nextFreeBlock(fileInfos, fileInfos)
-	fileBlock := nextFileBlock(fileInfos)
-	for freeBlock != nil && fileBlock != nil {
-		if freeBlock.blocks > fileBlock.blocks {
-			newFreeBlock := &FileInfo{ID: FreeID, blocks: freeBlock.blocks - fileBlock.blocks}
-			insertAfter(freeBlock, newFreeBlock)
-
-			freeBlock.ID = fileBlock.ID
-			freeBlock.blocks = fileBlock.blocks
-			fileBlock.ID = FreedUpID
-			fileBlock.blocks = 0
-
-			freeBlock = newFreeBlock
-			fileBlock = nextFileBlock(fileBlock)
-		} else if freeBlock.blocks < fileBlock.blocks {
-			freeBlock.ID = fileBlock.ID
-			fileBlock.blocks -= freeBlock.blocks
-			freeBlock = nextFreeBlock(freeBlock, fileBlock)
-		} else {
-			freeBlock.ID = fileBlock.ID
-			fileBlock.ID = FreedUpID
-			fileBlock.blocks = 0
-			fileBlock = nextFileBlock(fileBlock)
-			freeBlock = nextFreeBlock(freeBlock, fileBlock)
-
+	i := nextFree(inflate, 0)
+	j := nextFile(inflate, len(inflate)-1)
+	for i < j {
+		if inflate[i] < 0 && inflate[j] >= 0 {
+			inflate[i], inflate[j] = inflate[j], inflate[i]
 		}
-	}
-
-	var compacted []int
-	cur = fileInfos.next
-	for cur != fileInfos && cur.ID != FreeID && cur.ID != FreedUpID {
-		for i := 0; i < cur.blocks; i++ {
-			compacted = append(compacted, cur.ID)
-		}
-		cur = cur.next
+		i = nextFree(inflate, i)
+		j = nextFile(inflate, j)
 	}
 
 	var checksum int64
-	for i := 0; i < len(compacted); i++ {
-		checksum += int64(i * compacted[i])
+	for i := 0; i < len(inflate); i++ {
+		if inflate[i] >= 0 {
+			checksum += int64(i * inflate[i])
+		}
 	}
 
 	return checksum
 }
 
 func Part2(filename string) int64 {
-	return 0
-}
-
-func sentinel() *FileInfo {
-	f := &FileInfo{ID: SentinalID}
-	f.next = f
-	f.prev = f
-	return f
-}
-
-func insertAfter(infos *FileInfo, f *FileInfo) {
-	f.prev = infos
-	f.next = infos.next
-	infos.next.prev = f
-	infos.next = f
-}
-
-func nextFreeBlock(start, end *FileInfo) *FileInfo {
-	cur := start.next
-	for cur != end {
-		if cur.ID == FreeID {
-			return cur
+	ID := 0
+	freeID := -1
+	file := true
+	scanner, closeFunc := NewScanner(filename)
+	defer closeFunc()
+	scanner.Split(bufio.ScanBytes)
+	var inflate []int
+	blockLengths := make(map[int]int)
+	for scanner.Scan() {
+		n := int(Must(ParseInt64(scanner.Text())))
+		if file {
+			for i := 0; i < n; i++ {
+				inflate = append(inflate, ID)
+			}
+			blockLengths[ID] = n
+			ID++
+		} else {
+			for i := 0; i < n; i++ {
+				inflate = append(inflate, freeID)
+			}
+			blockLengths[freeID] = n
+			freeID--
 		}
-		cur = cur.next
+		file = !file
 	}
-	return nil
-}
-
-func nextFileBlock(fileInfo *FileInfo) *FileInfo {
-	cur := fileInfo.prev
-	for cur != fileInfo {
-		if cur.ID != FreeID && cur.ID != SentinalID && cur.ID != FreedUpID {
-			return cur
+	j := nextFile(inflate, len(inflate)-1)
+	for j >= 0 {
+		jBlockLength := blockLengths[inflate[j]]
+		i := nextFree(inflate, 0)
+		for i < j {
+			iBlockLength := blockLengths[inflate[i]]
+			if iBlockLength >= jBlockLength {
+				for jBlockLength > 0 {
+					inflate[i], inflate[j] = inflate[j], inflate[i]
+					i++
+					j--
+					iBlockLength--
+					jBlockLength--
+				}
+				if iBlockLength > 0 {
+					blockLengths[inflate[i]] = iBlockLength
+				}
+				break
+			}
+			i = nextFree(inflate, i+blockLengths[inflate[i]])
 		}
-		cur = cur.prev
+		j = nextFile(inflate, j-jBlockLength)
 	}
-	return nil
+
+	var checksum int64
+	for i := 0; i < len(inflate); i++ {
+		if inflate[i] >= 0 {
+			checksum += int64(i * inflate[i])
+		}
+	}
+
+	return checksum
 }
 
-func (f *FileInfo) String() string {
-	var vals []string
-	cur := f.next
-	for cur != f {
-		vals = append(vals, fmt.Sprintf("%+v", *cur))
-		cur = cur.next
+func nextFree(inflate []int, i int) int {
+	for i < len(inflate) && inflate[i] >= 0 {
+		i++
 	}
-	return "[" + strings.Join(vals, ", ") + "]"
+	return i
+}
+
+func nextFile(inflate []int, j int) int {
+	for 0 <= j && inflate[j] < 0 {
+		j--
+	}
+	return j
 }

@@ -22,7 +22,7 @@ const (
 	Day6Sample = "day6/sample.txt"
 	Day7Sample = "day7/sample.txt"
 	Day8Sample = "day8/sample.txt"
-	Day9Sample = "day9/sample.txt"
+	Day9Sample = "day9/input.txt"
 )
 
 var days = []struct {
