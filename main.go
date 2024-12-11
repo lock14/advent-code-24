@@ -3,6 +3,7 @@ package main
 import (
 	"advent/day1"
 	"advent/day10"
+	"advent/day11"
 	"advent/day2"
 	"advent/day3"
 	"advent/day4"
@@ -25,6 +26,7 @@ const (
 	Day8Sample  = "day8/sample.txt"
 	Day9Sample  = "day9/sample.txt"
 	Day10Sample = "day10/sample.txt"
+	Day11Sample = "day11/sample.txt"
 )
 
 var days = []struct {
@@ -81,6 +83,11 @@ var days = []struct {
 		input: Day10Sample,
 		part1: day10.Part1,
 		part2: day10.Part2,
+	},
+	{
+		input: Day11Sample,
+		part1: day11.Part1,
+		part2: day11.Part2,
 	},
 }
 
