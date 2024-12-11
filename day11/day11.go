@@ -6,49 +6,59 @@ import (
 	"strings"
 )
 
-type stone struct {
-	digits string
-	next   *stone
-	prev   *stone
-}
-
 func Part1(filename string) int64 {
-	list := sentinel()
+	var count int64
+	memo := make(map[string]map[int]int64)
 	scanner, closeFunc := NewScanner(filename)
 	defer closeFunc()
 	for scanner.Scan() {
 		for _, digits := range strings.Fields(scanner.Text()) {
-			insertAfter(list.prev, &stone{digits: digits})
+			count += countStone(memo, digits, 25)
 		}
-	}
-	for i := 0; i < 25; i++ {
-		blink(list)
-	}
-	var count int64
-	cur := list.next
-	for cur != list {
-		count++
-		cur = cur.next
 	}
 	return count
 }
 
-func blink(list *stone) {
-	cur := list.next
-	for cur != list {
-		if cur.digits == "0" {
-			cur.digits = "1"
-		} else if len(cur.digits)%2 == 0 {
-			mid := len(cur.digits) / 2
-			insertAfter(cur, &stone{digits: removeLeadingZeros(cur.digits[mid:])})
-			cur.digits = cur.digits[:mid]
-			cur = cur.next
-		} else {
-			n := Must(ParseInt64(cur.digits))
-			cur.digits = strconv.FormatInt(n*2024, 10)
+func Part2(filename string) int64 {
+	var count int64
+	memo := make(map[string]map[int]int64)
+	scanner, closeFunc := NewScanner(filename)
+	defer closeFunc()
+	for scanner.Scan() {
+		for _, digits := range strings.Fields(scanner.Text()) {
+			count += countStone(memo, digits, 75)
 		}
-		cur = cur.next
 	}
+	return count
+}
+
+func countStone(memo map[string]map[int]int64, digits string, iteration int) int64 {
+	if _, ok := memo[digits]; !ok {
+		memo[digits] = make(map[int]int64)
+	}
+	if count, ok := memo[digits][iteration]; ok {
+		return count
+	} else if iteration == 0 {
+		memo[digits][iteration] = 1
+		return 1
+	} else {
+		if digits == "0" {
+			count := countStone(memo, "1", iteration-1)
+			memo[digits][iteration] = count
+			return count
+		} else if len(digits)%2 == 0 {
+			mid := len(digits) / 2
+			count := countStone(memo, digits[:mid], iteration-1) + countStone(memo, removeLeadingZeros(digits[mid:]), iteration-1)
+			memo[digits][iteration] = count
+			return count
+		} else {
+			n := Must(ParseInt64(digits))
+			count := countStone(memo, strconv.FormatInt(n*2024, 10), iteration-1)
+			memo[digits][iteration] = count
+			return count
+		}
+	}
+
 }
 
 func removeLeadingZeros(s string) string {
@@ -57,29 +67,4 @@ func removeLeadingZeros(s string) string {
 		i++
 	}
 	return s[i:]
-}
-
-func Part2(filename string) int64 {
-	return 0
-}
-
-func sentinel() *stone {
-	s := &stone{}
-	s.next = s
-	s.prev = s
-	return s
-}
-
-func insertBefore(node *stone, s *stone) {
-	s.next = node
-	s.prev = node.prev
-	node.prev.next = s
-	node.prev = s
-}
-
-func insertAfter(node *stone, s *stone) {
-	s.prev = node
-	s.next = node.next
-	node.next.prev = s
-	node.next = s
 }
